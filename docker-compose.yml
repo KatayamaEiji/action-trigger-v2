@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+  db:
+    image: postgres:14.2
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+
+    ports:
+      - 5432:5432
+    restart: always
+    tty: true
+    volumes:
+      - ./action_trigger/db/data:/var/lib/postgresql/data
+      - ./action_trigger/db/init:/docker-entrypoint-initdb.d/
+  
+  web:
+    build: .
+    tty: true
+    command: python action_trigger/manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  pgadmin4:
+    image: dpage/pgadmin4
+    ports:
+        - 8888:80
+    volumes:
+        - pgadmin4_data:/var/lib/pgadmin
+    environment:
+        PGADMIN_DEFAULT_EMAIL: katayama.eiji@gmail.com
+        PGADMIN_DEFAULT_PASSWORD: password
+    depends_on:
+      - db
+
+volumes:
+  pgadmin4_data:
